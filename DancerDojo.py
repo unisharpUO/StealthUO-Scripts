@@ -97,7 +97,8 @@ if __name__ == '__main__':
 
         # entrance 79, 97, 326, 344 - bloodyroom 104, 115, 640, 660
         if (_currentTarget == 0 and len(_monsters) > 0) or\
-                (_currentTarget != 0 and not IsObjectExists(_currentTarget)):
+                (len(_monsters) > 0 and _currentTarget != 0 and
+                 not IsObjectExists(_currentTarget)):
             if 79 <= GetX(_monsters[0]) <= 97 and\
                     326 <= GetY(_monsters[0]) <= 344:
                 _currentTarget = _monsters[0]
