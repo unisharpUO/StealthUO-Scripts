@@ -1,18 +1,13 @@
 from py_stealth import *
 from helpers import *
+from lib.weapon import weapon
+
+
+UseHeal = True
+Bandaging = False
 
 
 if __name__ == '__main__':
-    while True:
-        Wait(250)
-        RequestContextMenu(Self())
-        _i = 0
-        _insure = False
-        for _menuItem in GetContextMenu().splitlines():
-            if "Toggle Item Insurance" in _menuItem:
-                SetContextMenuHook(Self(), _i)
-                _insure = True
-            else:
-                _i += 1
-
-        Wait(25000)
+    _target = RequestTarget()
+    _weapon = weapon(_target)
+    print(f'damage type: {_weapon.ElementalDamage}')

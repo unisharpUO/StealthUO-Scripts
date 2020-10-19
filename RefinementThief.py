@@ -1,7 +1,7 @@
 from lib.helpers import *
-from lib.reset_timer import *
 from py_stealth import *
 from lib.runebook import runebook
+import datetime
 
 
 # globals
@@ -12,7 +12,7 @@ RefinementTypes = [0x4CD9, 0x142B, 0x2D61, 0x4CD8, 0x142A, 0x4CDA]
 SetDropDelay(1500)
 SetMoveThroughNPC(True)
 Lockpicks = []
-Criminal = False
+CriminalTimer = time.time()
 Blocked = False
 Picked = False
 Minoc1 = [1, [2516, 561], 1073990757]
@@ -29,20 +29,20 @@ Jhelom5 = [10, [], 1074026166]
 Jhelom6 = [11, [], 1074026639]
 Britain1 = [12, [], 1073931021]
 Britain2 = [13, [], 1073930118]
-Skara1 = [14, [], 1074049091, 1076318930, 1074049095]
+Skara1 = [14, [637, 2219], 1074049091, 1076318930, 1074049095]
 Serpents1 = [15, [], 1073977418, 1076463925, 1073977417, 1073977415, 1073977416,
              1076130026, 1076129830]
 
 
-RefinementsSpots = [Skara1, Serpents1, Minoc1, Minoc2, Vesper1, Ocllo1, Ocllo2, Jhelom1,
-                    Jhelom2, Jhelom3, Jhelom4, Jhelom5, Jhelom6, Britain1,
-                    Britain2]
+RefinementsSpots = [Skara1, Serpents1, Minoc1, Minoc2, Vesper1, Ocllo1, Ocllo2,
+                    Jhelom1, Jhelom2, Jhelom3, Jhelom4, Jhelom5, Jhelom6,
+                    Britain1, Britain2]
 
 
 def OnClilocSpeech(_param1, _param2, _param3, _message):
-    global Blocked, Picked, Criminal
+    global Blocked, Picked, CriminalTimer
     if "steal the item" in _message:
-        CriminalTimerReset()
+        CriminalTimer = time.time()
     elif "blocking the location" in _message:
         Blocked = True
     elif "cannot teleport into that area" in _message:
@@ -51,24 +51,10 @@ def OnClilocSpeech(_param1, _param2, _param3, _message):
         Picked = True
 
 
-def NotCriminal():
-    global Criminal
-    Criminal = False
-    print(f'no longer criminal')
-
-
-CriminalTimer = TimerReset(122.0, NotCriminal)
-
-
 def CriminalTimerReset():
-    global Criminal, CriminalTimer
-    if Criminal:
-        CriminalTimer.reset()
-        print(f'resetting crim timer')
-    else:
-        Criminal = True
-        print(f'starting crim timer')
-        CriminalTimer.start()
+    global CriminalTimer, Criminal
+    Criminal = True
+    CriminalTimer = time.time()
 
 
 def DumpRefinements():
@@ -90,6 +76,9 @@ def DumpRefinements():
 def FindRefinements():
     global Blocked, Picked
     for _spot in RefinementsSpots:
+
+        if IsDead(Self()):
+            NewMoveXY(_spot[1][0], _spot[1][1], True, 1, True)
 
         UpdateLockpicks()
         RefinementBook.Recall(_spot[0])
@@ -129,7 +118,9 @@ def FindRefinements():
             else:
                 print(f'no refinements in box')
 
-        while Criminal:
+        _timeNow = time.time()
+        _elapsed = CriminalTimer - now
+        while _elapsed < 121:
             print(f'waiting for criminal status')
             UseSkill("Hiding")
             Wait(2000)
@@ -150,6 +141,13 @@ def MakeLockpicks():
 
 
 if __name__ == '__main__':
+    while True:
+        now = time.time()
+        elapsed = now - CriminalTimer
+        if elapsed > 120:
+            print(f'two minutes have passed')
+        Wait(1000)
+
     SetEventProc('evclilocspeech', OnClilocSpeech)
     AddToSystemJournal("starting RefinementThief")
     UseObject(Backpack())
