@@ -3,14 +3,15 @@ from py_stealth import *
 from lib.runebook import runebook
 import datetime
 
-
 # globals
-RefinementBook = runebook("Refinements", "magery", "osi")
+RefinementBook1 = runebook("Refinements1", "magery", "osi")
+RefinementBook2 = runebook("Refinements2", "magery", "osi")
 HomeBook = runebook("Home", "magery", "osi")
 Storage = 1131454660
 RefinementTypes = [0x4CD9, 0x142B, 0x2D61, 0x4CD8, 0x142A, 0x4CDA]
 SetDropDelay(1500)
 SetMoveThroughNPC(True)
+SetMoveOpenDoor(True)
 Lockpicks = []
 CriminalTimer = time.time()
 Blocked = False
@@ -32,11 +33,15 @@ Britain2 = [13, [], 1073930118]
 Skara1 = [14, [637, 2219], 1074049091, 1076318930, 1074049095]
 Serpents1 = [15, [], 1073977418, 1076463925, 1073977417, 1073977415, 1073977416,
              1076130026, 1076129830]
-
-
-RefinementsSpots = [Skara1, Serpents1, Minoc1, Minoc2, Vesper1, Ocllo1, Ocllo2,
-                    Jhelom1, Jhelom2, Jhelom3, Jhelom4, Jhelom5, Jhelom6,
-                    Britain1, Britain2]
+Skara2 = [16, [637, 2219], 1074048963]
+Skara3 = [1, [], 1074048011]
+Moonglow1 = [2, [], 1073946802]
+RefinementsSpots1 = [Minoc1, Minoc2, Vesper1, Ocllo1, Ocllo2,
+                     Jhelom1, Jhelom2, Jhelom3, Jhelom4, Jhelom5, Jhelom6,
+                     Britain1, Britain2, Skara1, Skara2, Serpents1]
+RefinementsSpots2 = [Skara3, Moonglow1]
+RefinementsSpots = [[RefinementsSpots1, RefinementBook1],
+                    [RefinementsSpots2, RefinementBook2]]
 
 
 def OnClilocSpeech(_param1, _param2, _param3, _message):
@@ -75,55 +80,57 @@ def DumpRefinements():
 
 def FindRefinements():
     global Blocked, Picked
-    for _spot in RefinementsSpots:
+    for _refinementSpot in RefinementsSpots:
+        for _spot in _refinementSpot[0]:
 
-        if IsDead(Self()):
-            NewMoveXY(_spot[1][0], _spot[1][1], True, 1, True)
+            if IsDead(Self()):
+                NewMoveXY(_spot[1][0], _spot[1][1], True, 1, True)
 
-        UpdateLockpicks()
-        RefinementBook.Recall(_spot[0])
-        Wait(2000)
+            UpdateLockpicks()
+            _refinementSpot[1].Recall(_spot[0])
+            Wait(2000)
 
-        if Blocked:
-            Blocked = False
-            continue
+            if Blocked:
+                Blocked = False
+                continue
 
-        for _box in _spot[2:]:
+            for _box in _spot[2:]:
 
-            while GetDistance(_box) > 1:
-                NewMoveXY(GetX(_box), GetY(_box), True, 1, True)
+                while GetDistance(_box) > 1:
+                    NewMoveXY(GetX(_box), GetY(_box), True, 1, True)
 
-            Wait(250)
-            Picked = False
-            while not Picked:
-                UseObject(Lockpicks)
+                Wait(250)
+                Picked = False
+                while not Picked:
+                    UseObject(Lockpicks)
+                    Wait(250)
+                    TargetToObject(_box)
+                    Wait(1500)
+
+                UseSkill("Remove Trap")
                 Wait(250)
                 TargetToObject(_box)
+                Wait(10000)
+                UseObject(_box)
                 Wait(1500)
 
-            UseSkill("Remove Trap")
-            Wait(250)
-            TargetToObject(_box)
-            Wait(10000)
-            UseObject(_box)
-            Wait(1500)
+                if FindTypesArrayEx(RefinementTypes, [0xFFFF], [_box], False):
+                    _foundList = GetFindedList()
+                    UseSkill("Stealing")
+                    Wait(250)
+                    TargetToObject(_foundList[0])
+                    print(f'stole a refinement')
+                    Wait(15000)
+                else:
+                    print(f'no refinements in box')
 
-            if FindTypesArrayEx(RefinementTypes, [0xFFFF], [_box], False):
-                _foundList = GetFindedList()
-                UseSkill("Stealing")
-                Wait(250)
-                TargetToObject(_foundList[0])
-                print(f'stole a refinement')
-                Wait(15000)
-            else:
-                print(f'no refinements in box')
+            while (time.time() - CriminalTimer) < 121:
+                print(f'time left until not crim:'
+                      f' {(time.time() - CriminalTimer) - 120}')
+                UseSkill("Hiding")
+                Wait(2000)
 
-        _timeNow = time.time()
-        _elapsed = CriminalTimer - now
-        while _elapsed < 121:
-            print(f'waiting for criminal status')
-            UseSkill("Hiding")
-            Wait(2000)
+            DumpRefinements()
 
 
 def UpdateLockpicks():
@@ -141,13 +148,7 @@ def MakeLockpicks():
 
 
 if __name__ == '__main__':
-    while True:
-        now = time.time()
-        elapsed = now - CriminalTimer
-        if elapsed > 120:
-            print(f'two minutes have passed')
-        Wait(1000)
-
+    CriminalTimer = time.time()
     SetEventProc('evclilocspeech', OnClilocSpeech)
     AddToSystemJournal("starting RefinementThief")
     UseObject(Backpack())
@@ -164,3 +165,8 @@ if __name__ == '__main__':
         DumpRefinements()
 
         FindRefinements()
+
+        _time = time.time()
+        while (time.time() - _time) < 600:
+            UseSkill("Hiding")
+            Wait(10000)
