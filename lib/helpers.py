@@ -1,6 +1,4 @@
-from py_stealth import ClientRequestObjectTarget, ClientTargetResponsePresent
-from py_stealth import ClientTargetResponse, FindTypesArrayEx, GetFindedList
-from py_stealth import AddToSystemJournal, Wait, GetDistance
+from py_stealth import *
 import time
 
 
@@ -47,3 +45,23 @@ def NewFind(_types, _colors, _container, _subs):
         except Exception:
             AddToSystemJournal("Exception caught during find.")
             Wait(250)
+
+
+def InsureItem(_item):
+    Wait(250)
+    RequestContextMenu(Self())
+    _i = 0
+    for _menuItem in GetContextMenu().splitlines():
+        if "Toggle Item Insurance" in _menuItem:
+            SetContextMenuHook(Self(), _i)
+            Wait(250)
+            WaitTargetObject(_item)
+            Wait(250)
+            CancelMenu()
+            print(f'insured item')
+        else:
+            _i += 1
+    CancelAllMenuHooks()
+    CancelTarget()
+    Wait(250)
+    return

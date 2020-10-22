@@ -6,7 +6,7 @@ import math
 from pathlib import Path
 
 
-class Jewelry:
+class Armor:
 
     def __init__(self, _id):
         super().__init__()
@@ -15,8 +15,14 @@ class Jewelry:
         self.TooltipRec = GetTooltipRec(_id)
         self.ItemName = self.Tooltip.split('|')[0]
         self.Antique = self.ClilocIDExists(1152714)
+        self.Brittle = self.ClilocIDExists(1116209)
         self.Cursed = self.ClilocIDExists(1049643)
         self.Skills = self.CalcSkills()
+        self.PhysicalResist = self.GetParam(1060448)
+        self.FireResist = self.GetParam(1060447)
+        self.ColdResist = self.GetParam(1060445)
+        self.PoisonResist = self.GetParam(1060449)
+        self.EnergyResist = self.GetParam(1060446)
         self.EnhancePotions = self.GetParam(1060411)
         self.DI = self.GetParam(1060402)
         self.SSI = self.GetParam(1060486)
@@ -76,7 +82,13 @@ class Jewelry:
             "ID": str(self.ID),
             "Name": str(self.ItemName),
             "Antique": str(self.Antique),
+            "Brittle": str(self.Brittle),
             "Cursed": str(self.Cursed),
+            "PhysicalResist": str(self.PhysicalResist),
+            "FireResist": str(self.FireResist),
+            "ColdResist": str(self.ColdResist),
+            "PoisonResist": str(self.PoisonResist),
+            "EnergyResist": str(self.EnergyResist),
             "EnhancePotions": str(self.EnhancePotions),
             "Skills": str(self.Skills),
             "DCI": str(self.DCI),

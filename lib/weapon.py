@@ -30,14 +30,16 @@ class Weapon:
         self.BloodDrinker = self.ClilocIDExists(1113591)
         self.Velocity = self.GetParam(1072793)
         self.BattleLust = self.ClilocIDExists(1113710)
-        self.DamageIncrease = self.GetParam(1060402)
-        self.SwingSpeedIncrease = self.GetParam(1060486)
-        self.FasterCasting = self.GetParam(1060413)
-        self.FasterCastingRecovery = self.GetParam(1060412)
-        self.SpellDamageIncrease = self.GetParam(1060483)
-        self.ReflectPhysicalDamage = self.GetParam(1060442)
-        self.DefenseChanceIncrease = self.GetParam(1060408)
-        self.HitChanceIncrease = self.GetParam(1060415)
+        self.DI = self.GetParam(1060402)
+        self.SSI = self.GetParam(1060486)
+        self.FC = self.GetParam(1060413)
+        self.FCR = self.GetParam(1060412)
+        self.LMC = self.GetParam(1060433)
+        self.LRC = self.GetParam(1060434)
+        self.SDI = self.GetParam(1060483)
+        self.RPD = self.GetParam(1060442)
+        self.DCI = self.GetParam(1060408)
+        self.HCI = self.GetParam(1060415)
         self.Strength = self.GetParam(1060485)
         self.Dexterity = self.GetParam(1060409)
         self.Intelligence = self.GetParam(1060432)
@@ -135,8 +137,6 @@ class Weapon:
             "HitSpell": str(self.HitSpell),
             "HitArea": str(self.HitArea),
             "HitLeech": str(self.HitLeech),
-            "DefenseChanceIncrease": str(self.DefenseChanceIncrease),
-            "HitChanceIncrease": str(self.HitChanceIncrease),
             "SpellChanneling": str(self.SpellChanneling),
             "Balanced": str(self.Balanced),
             "UseBestWeaponSkill": str(self.UseBestWeaponSkill),
@@ -144,12 +144,16 @@ class Weapon:
             "BloodDrinker": str(self.BloodDrinker),
             "Velocity": str(self.Velocity),
             "BattleLust": str(self.BattleLust),
-            "DamageIncrease": str(self.DamageIncrease),
-            "SwingSpeedIncrease": str(self.SwingSpeedIncrease),
-            "FasterCasting": str(self.FasterCasting),
-            "FasterCastingRecovery": str(self.FasterCastingRecovery),
-            "SpellDamageIncrease": str(self.SpellDamageIncrease),
-            "ReflectPhysicalDamage": str(self.ReflectPhysicalDamage),
+            "DCI": str(self.DCI),
+            "HCI": str(self.HCI),
+            "DI": str(self.DI),
+            "SSI": str(self.SSI),
+            "FC": str(self.FC),
+            "FCR": str(self.FCR),
+            "LMC": str(self.LMC),
+            "LRC": str(self.LRC),
+            "SDI": str(self.SDI),
+            "RPD": str(self.RPD),
             "Strength": str(self.Strength),
             "Intelligence": str(self.Intelligence),
             "HitPointBonus": str(self.HitPointBonus),

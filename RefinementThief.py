@@ -1,5 +1,4 @@
 from lib.helpers import *
-from py_stealth import *
 from lib.runebook import runebook
 import datetime
 
@@ -120,6 +119,7 @@ def FindRefinements():
                     Wait(250)
                     TargetToObject(_foundList[0])
                     print(f'stole a refinement')
+                    InsureItem(_foundList[0])
                     Wait(15000)
                 else:
                     print(f'no refinements in box')
