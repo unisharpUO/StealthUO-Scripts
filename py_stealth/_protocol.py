@@ -27,7 +27,7 @@ EVENTS_NAMES = (
 )
 
 EVENTS_ARGTYPES = _str, _uint, _int, _ushort, _short, _ubyte, _byte, _bool
-VERSION = 1, 0, 0, 0
+VERSION = 1, 0, 1, 0
 
 
 class Connection:
@@ -108,7 +108,7 @@ class Connection:
             # packet type is 1 (a returned value)
             if type_ == 1:
                 id_, = struct.unpack_from('H', data, offset)
-                self.results[id_] = data[offset + 2:offset + size]
+                self.results[id_] = data[offset + 2:offset + size - 2]
                 offset += size - 2  # - type_
             # packet type is 3 (an event callback)
             elif type_ == 3:
@@ -183,7 +183,7 @@ class ScriptMethod:
                 result = self.restype.from_buffer(conn.results.pop(id_))
                 return result.value
             except KeyError:
-                time.sleep(.001)
+                pass
 
 
 def get_port():

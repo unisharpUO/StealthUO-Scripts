@@ -7,6 +7,7 @@ Confidence = False
 FanDancer = 0x0F7
 Corpse = 0x2006
 LootBag = 0
+SendingBag = 0
 PlayerTypes = [183, 184, 185, 186, 400, 401, 402, 403, 605, 606, 607, 608, 666,
                667, 694, 695, 750, 751, 970]
 
@@ -34,18 +35,33 @@ def OnClilocSpeech(_param1, _param2, _param3, _message):
     return
 
 
+def CheckWeight():
+    if (Weight() <= MaxWeight()) and (SendingBag != 0):
+        if FindTypeEx(0x0EED, 0xFFFF, Backpack(), True):
+            _gold = GetFoundList()
+            UseObject(SendingBag)
+            Wait(1500)
+            WaitTargetObject(_gold[0])
+        else:
+            AddToSystemJournal("I'm overweight and I can't find gold to send..")
+
+
 def LootCorpse(_corpse):
     UseObject(_corpse)
     Wait(1500)
     _lootList = NewFind([0xFFFF], [0xFFFF], [_corpse], True)
     for _loot in _lootList:
-        _tooltipRec = GetTooltipRec(_loot)
-        if GetParam(_tooltipRec, 1112857) >= 20 and not\
-                ClilocIDExists(_tooltipRec, 1152714) and not\
-                ClilocIDExists(_tooltipRec, 1049643):
-            AddToSystemJournal(f'Looting Item: {_loot}')
-            MoveItem(_loot, 1, LootBag, 0, 0, 0)
-            InsureItem(_loot)
+        if (GetType(_loot) == 0x0EED) and (SendingBag != 0):
+            _count = Count(_loot)
+            MoveItem(_loot, _count, LootBag, 0, 0, 0)
+        else:
+            _tooltipRec = GetTooltipRec(_loot)
+            if GetParam(_tooltipRec, 1112857) >= 20 and not\
+                    ClilocIDExists(_tooltipRec, 1152714) and not\
+                    ClilocIDExists(_tooltipRec, 1049643):
+                AddToSystemJournal(f'Looting Item: {_loot}')
+                MoveItem(_loot, 1, LootBag, 0, 0, 0)
+                InsureItem(_loot)
     return
 
 
@@ -69,12 +85,21 @@ def InsureItem(_item):
 
 
 if __name__ == '__main__':
+    global SendingBag
     SetEventProc('evclilocspeech', OnClilocSpeech)
     SetEventProc('evdrawobject', OnDrawObject)
     SetFindDistance(20)
     SetFindVertical(20)
     SetDropDelay(850)
     UseObject(Backpack())
+    Wait(850)
+    if FindTypesArrayEx([0x0E76], [0xFFFF], [Backpack()], True):
+        _bags = GetFindedList()
+        for _bag in _bags:
+            # make sure they are bags of sending
+            if 'sending' in GetTooltip(_bag).split('|')[0]:
+                AddToSystemJournal("Found bag of sending...")
+                SendingBag = _bag
     Wait(850)
     _ignoreList = NewFind([0xFFFF], [0xFFFF], [Backpack()], True)
     for _ignoreItem in _ignoreList:
