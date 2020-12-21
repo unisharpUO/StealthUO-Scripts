@@ -36,7 +36,7 @@ def OnClilocSpeech(_param1, _param2, _param3, _message):
 
 
 def CheckWeight():
-    if (Weight() <= MaxWeight()) and (SendingBag != 0):
+    if (Weight() >= MaxWeight()) and (SendingBag != 0):
         if FindTypeEx(0x0EED, 0xFFFF, Backpack(), True):
             _gold = GetFoundList()
             UseObject(SendingBag)
@@ -117,6 +117,8 @@ if __name__ == '__main__':
         while not Connected():
             Connect()
             Wait(10000)
+
+        CheckWeight()
 
         _monsters = NewFind([FanDancer], [0xFFFF], [0x0], False)
 
