@@ -49,12 +49,12 @@ def CheckWeight():
 def LootCorpse(_corpse):
     UseObject(_corpse)
     Wait(1500)
-    _lootList = NewFind([0xFFFF], [0xFFFF], [_corpse], True)
-    for _loot in _lootList:
-        if (GetType(_loot) == 0x0EED) and (SendingBag != 0):
-            _count = Count(_loot)
-            MoveItem(_loot, _count, LootBag, 0, 0, 0)
-        else:
+    if FindTypesArrayEx([0xFFFF], [0xFFFF], [_corpse], True):
+        _lootList = GetFindedList()
+        for _loot in _lootList:
+            if (GetType(_loot) == 0x0EED) and (SendingBag != 0):
+                _count = GetQuantity(_loot)
+                MoveItem(_loot, _count, LootBag, 0, 0, 0)
             _tooltipRec = GetTooltipRec(_loot)
             if GetParam(_tooltipRec, 1112857) >= 20 and not\
                     ClilocIDExists(_tooltipRec, 1152714) and not\
@@ -62,6 +62,7 @@ def LootCorpse(_corpse):
                 AddToSystemJournal(f'Looting Item: {_loot}')
                 MoveItem(_loot, 1, LootBag, 0, 0, 0)
                 InsureItem(_loot)
+    Ignore(_corpse)
     return
 
 
@@ -85,7 +86,6 @@ def InsureItem(_item):
 
 
 if __name__ == '__main__':
-    global SendingBag
     SetEventProc('evclilocspeech', OnClilocSpeech)
     SetEventProc('evdrawobject', OnDrawObject)
     SetFindDistance(20)
@@ -101,14 +101,16 @@ if __name__ == '__main__':
                 AddToSystemJournal("Found bag of sending...")
                 SendingBag = _bag
     Wait(850)
-    _ignoreList = NewFind([0xFFFF], [0xFFFF], [Backpack()], True)
-    for _ignoreItem in _ignoreList:
-        Ignore(_ignoreItem)
+    if FindTypesArrayEx([0xFFFF], [0xFFFF], [Backpack()], True):
+        _ignoreList = GetFindedList()
+        for _ignoreItem in _ignoreList:
+            Ignore(_ignoreItem)
     AddToSystemJournal('Target your loot bag...')
     LootBag = RequestTarget()
     UseObject(LootBag)
     _monsters = []
     _corpses = []
+    _lootedCorpses = []
     _currentTarget = 0
 
     while True:
@@ -120,7 +122,8 @@ if __name__ == '__main__':
 
         CheckWeight()
 
-        _monsters = NewFind([FanDancer], [0xFFFF], [0x0], False)
+        if FindTypesArrayEx([FanDancer], [0xFFFF], [0x0], True):
+            _monsters = GetFindedList()
 
         # entrance 79, 97, 326, 344 - bloodyroom 104, 115, 640, 660
         if (_currentTarget == 0 and len(_monsters) > 0) or\
@@ -146,16 +149,24 @@ if __name__ == '__main__':
         if GetMana(Self()) >= 40:
             UsePrimaryAbility()
 
-        _corpses = NewFind([Corpse], [0xFFFF], [0x0], False)
+        if FindTypesArrayEx([Corpse], [0xFFFF], [0x0], True):
+            _corpses = GetFindedList()
+
         if len(_corpses) > 0:
             for _corpse in _corpses:
+
+                if _corpse in _lootedCorpses:
+                    continue
+
                 if GetDistance(_corpse) < 3:
                     LootCorpse(_corpse)
                     Ignore(_corpse)
+                    _lootedCorpses.append(_corpse)
                 else:
                     if 79 <= GetX(_corpse) <= 97 and\
                             326 <= GetY(_corpse) <= 344:
                         NewMoveXY(GetX(_corpse), GetY(_corpse), True, 0, True)
                         LootCorpse(_corpse)
                         Ignore(_corpse)
+                        _lootedCorpses.append(_corpse)
         Wait(1000)
