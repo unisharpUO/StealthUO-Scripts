@@ -37,7 +37,7 @@ class DungeonCams:
                         _message = '[%s] Found: %s:%s at %s' % (_currentTime, _name, _objID, _location)
                         _username = ShardName()
                         _webhook = DiscordWebhook(
-                            url='https://discord.com/api/webhooks/830082253707018272/pPqAFC0fES0EgthRdYedVOECx2V_IYJs4FJdGM85bHtTbftRhhwoUGmJtY_GLMSbPI8I',
+                            url='removed',
                             content=_message,
                             username=_username)
                         _webhook.execute()
