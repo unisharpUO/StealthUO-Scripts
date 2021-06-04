@@ -6,7 +6,7 @@ import datetime
 RefinementBook1 = runebook("Refinements1", "magery", "osi")
 RefinementBook2 = runebook("Refinements2", "magery", "osi")
 HomeBook = runebook("Home", "magery", "osi")
-Storage = 1131454660
+Storage = 0x4040F69D
 RefinementTypes = [0x4CD9, 0x142B, 0x2D61, 0x4CD8, 0x142A, 0x4CDA]
 SetDropDelay(1500)
 SetMoveThroughNPC(True)
@@ -41,6 +41,10 @@ RefinementsSpots1 = [Minoc1, Minoc2, Vesper1, Ocllo1, Ocllo2,
 RefinementsSpots2 = [Skara3, Moonglow1]
 RefinementsSpots = [[RefinementsSpots1, RefinementBook1],
                     [RefinementsSpots2, RefinementBook2]]
+SuitLayers = [4, 6, 7, 8, 10, 11, 12, 13, 14, 15, 17, 19, 20, 21, 25]
+SuitIDs = [1106164468, 1127091998, 1111096306, 1083660992, 1099513030,
+           1088417521, 1085411313, 1123903606, 1085413588, 1088417511,
+           1102703049, 1084917000, 1127090749, 1088417509, 1078251179]
 
 
 def OnClilocSpeech(_param1, _param2, _param3, _message):
@@ -100,11 +104,21 @@ def FindRefinements():
 
                 Wait(250)
                 Picked = False
+                _i = 0
                 while not Picked:
+                    _i += 1
                     UseObject(Lockpicks)
                     Wait(250)
                     TargetToObject(_box)
                     Wait(1500)
+                    if _i > 4:
+                        if FindType(0x410A, Backpack()):
+                            _skeletonKey = FindItem()
+                            UseObject(Lockpicks)
+                            Wait(250)
+                            TargetToObject(_box)
+                        else:
+                            exit()
 
                 UseSkill("Remove Trap")
                 Wait(250)
@@ -153,6 +167,13 @@ if __name__ == '__main__':
     AddToSystemJournal("starting RefinementThief")
     UseObject(Backpack())
     Wait(2000)
+
+    _i = 0
+    for _layer in SuitLayers:
+        if ObjAtLayer(_layer) == 0:
+            Equip(_layer, SuitIDs[_i])
+            Wait(1250)
+        _i += 1
 
     while True:
 

@@ -53,6 +53,28 @@ Bombs = []
 Cures = []
 
 
+def NewFind(_types, _colors, _container, _subs):
+    _foundlist = []
+    while True:
+        try:
+            Wait(250)
+            if FindTypesArrayEx(_types, _colors, _container, _subs):
+                _foundList = GetFindedList()
+                _distanceList = []
+                if len(_foundList) > 1:
+                    for _found in _foundList:
+                        _distanceList.append(GetDistance(_found))
+                    _orderedList = [_foundList[_i] for _i in _distanceList]
+                    return _orderedList
+                else:
+                    return _foundList
+            else:
+                return []
+        except Exception:
+            AddToSystemJournal("Exception caught during find.")
+            Wait(250)
+
+
 def MoveNextSpot():
     global CurrentSpot
     AddToSystemJournal("Moving to next spot...")

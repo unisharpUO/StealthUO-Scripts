@@ -2,6 +2,7 @@ from py_stealth import ClientRequestObjectTarget, ClientTargetResponsePresent
 from py_stealth import ClientTargetResponse, FindTypesArrayEx, GetFindedList
 from py_stealth import AddToSystemJournal, Wait, GetDistance
 import time
+from py_stealth import *
 
 
 def RequestTarget(_timeoutS=0):
