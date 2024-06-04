@@ -1,6 +1,7 @@
 ﻿from __future__ import division
 
 import datetime as _datetime
+import platform as _platform
 import struct as _struct
 import time as _time
 
@@ -11,6 +12,11 @@ from ._protocol import get_connection as _get_connection
 from .utils import ddt2pdt as _ddt2pdt
 from .utils import pdt2ddt as _pdt2ddt
 from .utils import iterable as _iterable
+
+_IS_WIN = _platform.system() == 'Windows'
+if _IS_WIN:
+    from ._win_multimedia_timers import timer_resolution as _timer_resolution
+
 
 _clear_event_callback = _ScriptMethod(7)  # ClearEventProc
 _clear_event_callback.argtypes = [_ubyte]  # EventIndex
@@ -56,6 +62,18 @@ def AddToSystemJournal(*args, **kwargs):
     text = s_args + (sep if s_args and s_kwargs else '') + s_kwargs + end
     _add_to_system_journal(text)
 
+
+_add_to_system_journal_ex = _ScriptMethod(386)  # AddToSystemJournalEx
+_add_to_system_journal_ex.argtypes = [_str,  # Text
+                                      _int,  # TextColor
+                                      _int,  # BgColor
+                                      _int,  # FontSize
+                                      _str  # FontName
+                                      ]
+
+
+def AddToSystemJournalEx(value: str, textcolor: int = 0, bgcolor: int = -1, fontsize: int = 10, fontname: str = 'Consolas'):
+    _add_to_system_journal_ex(value, textcolor, bgcolor, fontsize, fontname)
 
 _get_stealth_info = _ScriptMethod(12)  # GetStealthInfo
 _get_stealth_info.restype = _buffer  # TAboutData
@@ -179,7 +197,7 @@ def GetCharTitle():
 
 
 _get_gold_count = _ScriptMethod(27)  # GetSelfGold
-_get_gold_count.restype = _ushort
+_get_gold_count.restype = _uint
 
 
 def Gold():
@@ -726,7 +744,11 @@ def Wait(WaitTimeMS):
     end = _time.time() + WaitTimeMS / 1000
     while _time.time() < end:
         _wait()  # pause script and event checks
-        _time.sleep(0.010)
+        if _IS_WIN:
+            with _timer_resolution():
+                _time.sleep(.005)
+        else:
+            _time.sleep(.005)
     else:
         _wait()  # condition does not work while delay is a very small number
 
@@ -1732,7 +1754,7 @@ def GetTooltipRec(ObjID):
     result = []
     data = _get_tooltip_obj(ObjID)
     count = _uint.from_buffer(data)
-    offset = 8
+    offset = 4
     for i in range(count):
         cliloc, length = _struct.unpack_from('<iI', data, offset)
         offset += 8
@@ -2016,6 +2038,15 @@ def IsFemale(ObjID):
     return _is_female(ObjID)
 
 
+_is_house = _ScriptMethod(382)  # IsHouse
+_is_house.restype = _bool
+_is_house.argtypes = [_uint]  # ObjID
+
+
+def IsHouse(ObjID):
+    return _is_house(ObjID)
+
+
 _open_door = _ScriptMethod(182)  # OpenDoor
 
 
@@ -2191,16 +2222,15 @@ _get_context_menu_record.restype = _buffer  # TODO: What is this do?
 
 
 def GetContextMenuRec():
-    """
-    fmt = 'HH'
+    keys = 'ID', 'EntriesNumber', 'NewCliloc'
+    entry_keys = 'Tag', 'IntLocID', 'Flags', 'Color'
     data = _get_context_menu_record()
-    keys = 'Tag', 'Flags'
-    serial, count, tmp = _struct.unpack('>IBI', data[:9])
-    l = []
-    for i in range(count):
-        l.append(_struct.unpack('HHIHH', data[9+i*12:9+i*12+12]))
-    """
-    return None
+    res = dict(zip(keys, _struct.unpack('<IB?', data[:6])))
+    res['Entries'] = []
+    for i in range(res['EntriesNumber']):
+        entry_data = _struct.unpack('<HIHH', data[6+i*10:6+i*10+10])
+        res['Entries'].append(dict(zip(entry_keys, entry_data)))
+    return res
 
 
 _clear_context_menu = _ScriptMethod(196)  # ClearContextMenu
@@ -2769,7 +2799,8 @@ def GetGumpInfo(GumpIndex):
                 offset += element.size
                 values.append(element.value)
             if cls is _Text:
-                result[cls.container].append(*[values])  # there is only one element
+                result[cls.container].append(
+                    *[values])  # there is only one element
             else:
                 element = dict(zip(cls.keys, values))
                 if 'ClilocID' in cls.keys and 'Arguments' in cls.keys:  # need to represent clilocs
@@ -2777,13 +2808,14 @@ def GetGumpInfo(GumpIndex):
                     args = element.get('Arguments', '')
                     args = args.split('@')[1:] or []
                     for arg in args:
-                        if '~' in text:
+                        if '~' in text and arg:
                             if arg.startswith('#'):  # another cliloc
                                 arg = GetClilocByID(int(arg.strip('#')))
                             s = text.index('~')
                             e = text.index('~', s + 1)
-                            text = text.replace(text[s:e + 1], arg, 1) or arg  # TODO: wtf?
-                    element['Arguments'] = text
+                            text = text.replace(text[s:e + 1], arg,
+                                                1) or arg  # TODO: wtf? why or arg?
+                    element['ClilocText'] = text
                 result[cls.container].append(element)
     return result
 
@@ -3432,7 +3464,8 @@ def SetEasyUO(num, Regvalue):
     key = winreg.HKEY_CURRENT_USER
     access = winreg.KEY_WRITE
     with winreg.OpenKey(key, _easyuo_sub_key, 0, access) as easyuo_key:
-        winreg.SetValueEx(easyuo_key, '*' + str(num), 0, winreg.REG_SZ, Regvalue)
+        winreg.SetValueEx(easyuo_key, '*' + str(num), 0, winreg.REG_SZ,
+                          Regvalue)
 
 
 def GetEasyUO(num):
@@ -3590,7 +3623,7 @@ def PartyMembersList():
     count = _uint.from_buffer(data)
     if count:
         fmt = '<' + count * 'I'
-        result.extend(_struct.unpack(fmt, data))
+        result.extend(_struct.unpack_from(fmt, data, count.size))
     return result
 
 
@@ -3788,11 +3821,12 @@ def GetStaticTileData(Tile):
     data = _get_static_tile_data(Tile)
     if data:
         result['Flags'] = ConvertIntegerToFlags(1, _ulong.from_buffer(data))
-        result['Weight'] = _int.from_buffer(data, 4)
-        result['Height'] = _int.from_buffer(data, 8)
-        result['RadarColorRGBA'] = _struct.unpack_from('<4B', data, 12)
-        length = _uint.from_buffer(data, 16)
-        result['Name'] = data[20: 20 + length].rstrip(b'\x00')
+        result['Weight'] = _ushort.from_buffer(data, 8)
+        result['AnimID'] = _ushort.from_buffer(data, 10)
+        result['Height'] = _int.from_buffer(data, 12)
+        result['RadarColorRGBA'] = _struct.unpack_from('<4B', data, 16)
+        length = _uint.from_buffer(data, 20)
+        result['Name'] = data[24: 24 + length].rstrip(b'\x00')
         if b'' != '':  # py3
             result['Name'] = result['Name'].decode()
     return result
@@ -3863,7 +3897,7 @@ _get_surface_z.argtypes = [_ushort,  # X
 
 
 def GetSurfaceZ(X, Y, WorldNum):
-    return _get_surface_z(X, Y, WorldNum())
+    return _get_surface_z(X, Y, WorldNum)
 
 
 _is_cell_passable = _ScriptMethod(285)  # IsWorldCellPassable
@@ -3896,8 +3930,10 @@ def GetStaticTilesArray(Xmin, Ymin, Xmax, Ymax, WorldNum, TileTypes):
     if not _iterable(TileTypes):
         TileTypes = [TileTypes]
     result = []
-    data = _get_statics_array(Xmin, Ymin, Xmax, Ymax, WorldNum, len(TileTypes),
-                              _struct.pack('<H' * len(TileTypes), *TileTypes))
+    data = _get_statics_array(
+        Xmin, Ymin, Xmax, Ymax, WorldNum, len(TileTypes),
+        _struct.pack('<' + 'H' * len(TileTypes), *TileTypes)
+    )
     count = _uint.from_buffer(data)
     fmt = '<3Hb'
     size = _struct.calcsize(fmt)
@@ -3921,8 +3957,10 @@ def GetLandTilesArray(Xmin, Ymin, Xmax, Ymax, WorldNum, TileTypes):
     if not _iterable(TileTypes):
         TileTypes = [TileTypes]
     result = []
-    data = _get_lands_array(Xmin, Ymin, Xmax, Ymax, WorldNum, len(TileTypes),
-                            _struct.pack('<H' * len(TileTypes), *TileTypes))
+    data = _get_lands_array(
+        Xmin, Ymin, Xmax, Ymax, WorldNum, len(TileTypes),
+        _struct.pack('<' + 'H' * len(TileTypes), *TileTypes)
+    )
     count = _uint.from_buffer(data)
     fmt = '<3Hb'
     size = _struct.calcsize(fmt)
@@ -4175,7 +4213,8 @@ def newMoveXYZ(Xdst, Ydst, Zdst, AccuracyXY, AccuracyZ, Running, Callback=None):
                 if IsWorldCellPassable(cx, cy, cz, x, y, WorldNum()):
                     cx, cy, cz = x, y, z
                 else:
-                    debug('Point ({0}, {1}, {2}) is not passable.'.format(x, y, z))
+                    debug('Point ({0}, {1}, {2}) is not passable.'.format(x, y,
+                                                                          z))
                     find_path = True
                     break
             except IndexError:
@@ -4716,7 +4755,8 @@ def GetMultis():
             "XMin", "XMax", "YMin", "YMax",
             "Width", "Height")
     for i in range(count):
-        obj = dict(zip(keys, _struct.unpack_from(fmt, data, i * size + count.size)))
+        obj = dict(
+            zip(keys, _struct.unpack_from(fmt, data, i * size + count.size)))
         result.append(obj)
     return result
 
@@ -4748,7 +4788,8 @@ def GetMenuItemsEx(MenuCaption):
 
         def __str__(self):
             template = 'Model: {0}, Color: {1}, Text: {2}'
-            return '{ ' + template.format(hex(self.model), hex(self.color), self.text) + ' }'
+            return '{ ' + template.format(hex(self.model), hex(self.color),
+                                          self.text) + ' }'
 
         def __repr__(self):
             return self.__str__()
@@ -4795,7 +4836,6 @@ def GetNextStepZ(CurrX, CurrY, DestX, DestY, WorldNum, CurrZ):
 
 
 _client_hide = _ScriptMethod(368)  # ClientHide
-_client_hide.restype = _bool
 _client_hide.argtypes = [_uint]  # ID
 
 
@@ -4805,17 +4845,240 @@ def ClientHide(ID):
 
 _get_skill_lock_state = _ScriptMethod(369)  # GetSkillLockState
 _get_skill_lock_state.restype = _byte
-_get_skill_lock_state.argtypes = [_str]  # SkillName
+_get_skill_lock_state.argtypes = [_int]  # SkillName
 
 
 def GetSkillLockState(SkillName):
-    return _get_skill_lock_state(SkillName)
+    return _get_skill_lock_state(_get_skill_id(SkillName))
 
 
 _get_stat_lock_state = _ScriptMethod(372)  # GetStatLockState
 _get_stat_lock_state.restype = _byte
-_get_stat_lock_state.argtypes = [_str]  # SkillName
+_get_stat_lock_state.argtypes = [_byte]  # StatId
 
 
-def GetStatLockState(SkillName):
-    _get_stat_lock_state(SkillName)
+def GetStatLockState(StatId):
+    return _get_stat_lock_state(StatId)
+
+
+_equip_last_weapon = _ScriptMethod(370)
+
+
+def EquipLastWeapon():
+    _equip_last_weapon()
+
+
+# Book functions
+
+_book_get_page_text = _ScriptMethod(373)
+_book_get_page_text.restype = _str
+_book_get_page_text.argtypes = [_ushort]
+
+
+def BookGetPageText(Page):
+    return _book_get_page_text(Page)
+
+
+_book_set_text = _ScriptMethod(374)
+_book_set_text.argtypes = [_str]
+
+
+def BookSetText(Text):
+    _book_set_text(Text)
+
+
+_book_set_page_text = _ScriptMethod(375)
+_book_set_page_text.argtypes = [_ushort, _str]
+
+
+def BookSetPageText(Page, Text):
+    _book_set_page_text(Page, Text)
+
+
+_book_clear_text = _ScriptMethod(376)
+
+
+def BookClearText():
+    _book_clear_text()
+
+
+_book_set_header = _ScriptMethod(377)
+_book_set_header.argtypes = [_str, _str]
+
+
+def BookSetHeader(title, author):
+    _book_set_header(title, author)
+
+
+# Character creation
+
+_create_char = _ScriptMethod(371)
+_create_char.argtypes =[
+    _str,  # ProfileName
+    _str,  # ShardName
+    _str,  # CharName
+    _bool, # Gender
+    _byte, # Race
+    _byte, # Str
+    _byte, # Dex
+    _byte, # Int
+    _str,  # Skill1
+    _str,  # Skill2
+    _str,  # Skill3
+    _str,  # Skill4
+    _int,  # SkillValue1
+    _int,  # SkillValue2
+    _int,  # SkillValue3
+    _int,  # SkillValue4
+    _byte, # Start City
+    _uint, # Free Slot
+]
+
+
+def CreateChar(
+        ProfileName,  # ProfileName
+        ShardName,  # ShardName
+        CharName,  # CharName
+        Gender,  # Gender
+        Race,  # Race
+        Strn,  # Str
+        Dex,  # Dex
+        Int,  # Int
+        Skill1,  # Skill1
+        Skill2,  # Skill2
+        Skill3,  # Skill3
+        Skill4,  # Skill4
+        SkillValue1,  # SkillValue1
+        SkillValue2,  # SkillValue2
+        SkillValue3,  # SkillValue3
+        SkillValue4,  # SkillValue4
+        City,  # Start City
+        Slot,  # Free Slot
+):
+    _create_char(
+        ProfileName,    # ProfileName
+        ShardName,      # ShardName
+        CharName,       # CharName
+        Gender,         # Gender
+        Race,           # Race
+        Strn,           # Str
+        Dex,            # Dex
+        Int,            # Int
+        Skill1,         # Skill1
+        Skill2,         # Skill2
+        Skill3,         # Skill3
+        Skill4,         # Skill4
+        SkillValue1,    # SkillValue1
+        SkillValue2,    # SkillValue2
+        SkillValue3,    # SkillValue3
+        SkillValue4,    # SkillValue4
+        City,           # Start City
+        Slot,           # Free Slot
+    )
+
+
+# Script control functions
+
+_get_script_count = _ScriptMethod(450)
+_get_script_count.restype = _ushort
+
+
+def GetScriptCount():
+    return _get_script_count()
+
+
+_get_script_path = _ScriptMethod(451)
+_get_script_path.argtypes = [_ushort]
+_get_script_path.restype = _str
+
+
+def GetScriptPath(ScriptIndex):
+    return _get_script_path(ScriptIndex)
+
+
+_get_script_state = _ScriptMethod(452)
+_get_script_state.argtypes = [_ushort]
+_get_script_state.restype = _byte
+
+
+def GetScriptState(ScriptIndex):
+    return _get_script_state(ScriptIndex)
+
+
+_start_script = _ScriptMethod(453)
+_start_script.argtypes = [_str]
+_start_script.restype = _ushort
+
+
+def StartScript(ScriptPath):
+    return _start_script(ScriptPath)
+
+
+_stop_script = _ScriptMethod(454)
+_stop_script.argtypes = [_ushort]
+
+
+def StopScript(ScriptIndex):
+    _stop_script(ScriptIndex)
+
+
+_pause_resume_sel_script = _ScriptMethod(455)
+_pause_resume_sel_script.argtypes = [_ushort]
+
+
+def PauseResumeScript(ScriptIndex):
+    _pause_resume_sel_script(ScriptIndex)
+
+
+_stop_all_scripts = _ScriptMethod(456)
+
+
+def StopAllScripts():
+    _stop_all_scripts()
+
+
+_set_script_name = _ScriptMethod(457)
+_set_script_name.argtypes = [_ushort, _str]
+
+
+def SetScriptName(ScriptIndex, ScriptName):
+    return _set_script_name(ScriptIndex, ScriptName)
+
+
+_get_script_name = _ScriptMethod(458)
+_get_script_name.argtypes = [_ushort]
+_get_script_name.restype = _str
+
+
+def GetScriptName(ScriptIndex):
+    return _get_script_name(ScriptIndex)
+
+
+_add_user_static = _ScriptMethod(383)
+_add_user_static.argtypes = [_buffer, _byte]
+_add_user_static.restype = _uint
+
+
+def AddUserStatic(Tile, X, Y, Z, Color, WorldNum):
+    buff = _struct.pack("<HHHbH", Tile, X, Y, Z, Color)
+    return _add_user_static(buff, WorldNum)
+
+
+def AddUserStaticItem(StaticItem, WorldNum):
+    return AddUserStatic(StaticItem["tile"], StaticItem["x"], StaticItem["y"], StaticItem["z"], StaticItem["color"], WorldNum)
+
+
+_remove_user_static = _ScriptMethod(384)
+_remove_user_static.argtypes = [_uint]
+_remove_user_static.restype = _bool
+
+
+def RemoveUserStatic(ID):
+    return _remove_user_static(ID)
+
+
+_clear_user_static = _ScriptMethod(385)
+
+
+def ClearUserStatics():
+    return _clear_user_static()
