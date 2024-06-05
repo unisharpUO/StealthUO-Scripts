@@ -25,5 +25,5 @@ while True:
             UseSkill('Meditation')
             Wait(2500)
 
-    Cast('Resilience')
-    Wait(1500)
+    Cast('Invigorate')
+    Wait(1750)

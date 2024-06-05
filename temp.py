@@ -2,6 +2,7 @@ from helpers import *
 
 
 SetFindDistance(20)
+SetFindVertical(20)
 
 while True:
     ghosts = []
