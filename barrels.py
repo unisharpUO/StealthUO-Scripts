@@ -19,12 +19,11 @@ Confidence = False
 # top left = 6428,1735
 # bottom right = 6434,1752
 # bottom left = 6428,1752
-#
+
 Doors = [1761, 1757]
 
 # room format is, entrance coords, good barrels, bad barrels
-RoomTopRight = [[6434, 1735], [6437, 1729], [6445, 1737], [6440, 1732],
-                [6442, 1734]]
+RoomTopRight = [[6434, 1735], [6437, 1729], [6445, 1737], [6440, 1732], [6442, 1734]]
 RoomTopLeft = [[6428, 1735]]
 RoomBottomRight = [[6434, 1752]]
 RoomBottomLeft = [[6428, 1752]]
@@ -51,12 +50,29 @@ def GetKey(_key):
 
 
 def GetSafe(_room):
-    # THIS IS WHERE I STOPPED
+    SetFindDistance(2)
+    _centerBarrels = GetCenterBarrels(_room)
+    NewMoveXY(_centerBarrels[0], _centerBarrels[1], False, 0, False)
+    _barrels = FindBarrels()
+    _barrelsCoords = []
+    for _barrel in _barrels:
+        while GetDistance(_barrel) > 1:
+            _dir = CalcDir(GetX(Self()), GetY(Self()),
+                           GetX(_barrel), GetY(_barrel))
+            print(f'Stepping')
+            Step(_dir)
+            Wait(250)
+        AttackBarrels(_barrel)
+        _barrels = FindBarrels()
+        break
     return
+
+# solid barrels color 2500
+# regular barrels color 0
 
 
 def FindBarrels():
-    SetFindDistance(8)
+    #SetFindDistance(8)
     _barrels = []
     _barrelsSorted = []
     if FindTypesArrayEx([4014, 7861, 3703], [0xFFFF], [0x0], False):
@@ -130,7 +146,9 @@ def AttackBarrels(_barrel):
             Attack(_barrel)
         if FindType(0x410B, 0x0):
             GetKey(FindItem())
+        print('cycling 2s wait in AttackBarrels function')
         Wait(2000)
+        Attack(_barrel)
 
 
 if __name__ == '__main__':
@@ -178,6 +196,7 @@ if __name__ == '__main__':
                 Step(6)
 
             while not GotKey:
+                SetFindDistance(8)
                 _barrels = FindBarrels()
                 _barrelsCoords = []
                 _centerBarrels = GetCenterBarrels(_room)
