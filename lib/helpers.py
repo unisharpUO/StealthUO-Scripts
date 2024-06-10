@@ -85,7 +85,7 @@ def InsureItem(_item):
     Wait(250)
     RequestContextMenu(Self())
     _i = 0
-    for _menuItem in GetContextMenu().splitlines():
+    for _menuItem in GetContextMenu():
         if "Toggle Item Insurance" in _menuItem:
             SetContextMenuHook(Self(), _i)
             Wait(250)
@@ -97,5 +97,6 @@ def InsureItem(_item):
             _i += 1
     CancelAllMenuHooks()
     CancelTarget()
+    ClearContextMenu()
     Wait(250)
     return

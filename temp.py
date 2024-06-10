@@ -4,14 +4,15 @@ from helpers import *
 SetFindDistance(20)
 SetFindVertical(20)
 
+animals = [207, 290, 208]
+
 while True:
-    ghosts = []
+    found = []
 
-    if FindTypesArrayEx([26], [0xFFFF], [0x0], True):
-        ghosts = GetFoundList()
+    if FindTypesArrayEx(animals, [0xFFFF], [0x0], True):
+        found = GetFoundList()
 
-    for ghost in ghosts:
-        Attack(ghost)
-        Wait(500)
+    for a in found:
+        Attack(a)
+        Wait(2000)
 
-    Wait(1500)

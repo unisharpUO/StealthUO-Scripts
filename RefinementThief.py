@@ -6,7 +6,7 @@ import datetime
 RefinementBook1 = runebook("Refinements1", "magery", "osi")
 RefinementBook2 = runebook("Refinements2", "magery", "osi")
 HomeBook = runebook("Home", "magery", "osi")
-Storage = 0x4040F69D
+Storage = 1078534250
 RefinementTypes = [0x4CD9, 0x142B, 0x2D61, 0x4CD8, 0x142A, 0x4CDA]
 SetDropDelay(1500)
 SetMoveThroughNPC(True)
@@ -74,6 +74,7 @@ def DumpRefinements():
         NewMoveXY(GetX(Storage), GetY(Storage), True, 1, True)
         Wait(500)
         UseObject(Storage)
+        UseSkill('Hiding')
         Wait(1500)
         for _found in _foundList:
             print(f'moving item: {_found}')
