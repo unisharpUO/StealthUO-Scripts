@@ -160,6 +160,7 @@ if __name__ == '__main__':
         UseBush = True
 
 #    while True:
+
 #        _target = RequestTarget()
 #        print(f'{GetType(_target)} {GetX(_target)} {GetY(_target)}')
 #        Wait(500)
