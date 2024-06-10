@@ -1,15 +1,24 @@
 from lib.helpers import *
 
 
+
+def onPartyInvite(senderID):
+    PartyAcceptInvite()
+    Wait(500)
+
+
 if __name__ == '__main__':
-    Equip(RhandLayer(), 0x4585AD5A)
+    SetEventProc('evPartyInvite', onPartyInvite)
     while True:
+        if GetSkillCurrentValue('Chivalry') == 75:
+            SetSkillLockState('Chivalry', 2)
+            exit()
+
+        Necro = GetSkillCurrentValue('Necromancy')
 
         if GetMana(Self()) < 10:
             while GetMana(Self()) < GetMaxMana(Self()):
-                UseSkill('Meditation')
-                Wait(1500)
-            Equip(RhandLayer(), 0x4585AD5A)
+                Wait(2500)
 
-        Cast('Counter Attack')
-        Wait(750)
+        Cast('Lich Form')
+        Wait(1750)
