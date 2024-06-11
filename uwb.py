@@ -34,7 +34,6 @@ def onSpeech(message, senderName, senderID):
                 Wait(1500)
             case "PartyChatMsg: follow toggle":
                 AutoFollow = not AutoFollow
-                print(f'AutoFollow: {AutoFollow}')
 
 
 if __name__ == '__main__':
@@ -48,7 +47,7 @@ if __name__ == '__main__':
     SetMoveThroughNPC(1)
 
     while True:
-        Wait(1000)
+        Wait(500)
 
         if AutoFollow:
             if (GetX(Self()) != GetX(LeaderID)) or (GetY(Self()) != GetY(LeaderID)):
