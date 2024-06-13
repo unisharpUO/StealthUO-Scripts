@@ -24,4 +24,4 @@ while True:
         Wait(1000)
     elif 90 <= Necromancy < 100:
         Cast('Lich Form')
-        Wait(1000)
+        Wait(1500)
