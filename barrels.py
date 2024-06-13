@@ -215,5 +215,5 @@ if __name__ == '__main__':
                     break
 
             if GotKey:
-                GetSafe(_room)
+                #GetSafe(_room)
                 GotKey = False
