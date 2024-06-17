@@ -37,7 +37,7 @@ if __name__ == '__main__':
     SetFindDistance(12)
     SetFindVertical(12)
     VortexTimer = time.time()
-    UseVortex = False
+    UseVortex = True
 
     while True:
         Wait(500)
@@ -53,8 +53,7 @@ if __name__ == '__main__':
 
         if GetHP(Self()) < GetMaxHP(Self()):
             UseSkill('Peacemaking')
-            WaitForTarget(500)
-            TargetToObject(Self())
+            WaitTargetSelf()
             Wait(250)
             CastToObj('Heal', Self())
             Wait(500)
