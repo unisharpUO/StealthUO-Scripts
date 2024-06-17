@@ -4,6 +4,7 @@ from lib.armor import *
 from lib.items import *
 from lib.jewelry import *
 import json
+import tkinter as tk
 
 
 ArmorList = []
@@ -42,5 +43,8 @@ def WriteToFile():
 
 
 if __name__ == '__main__':
-    SearchContainer()
-    WriteToFile()
+    window = tk.Tk()
+    greeting = tk.Label(text="Hello, Tkinter")
+    greeting.pack()
+    window.mainloop()
+    print('test')
