@@ -36,9 +36,20 @@ if __name__ == '__main__':
     SetEventProc('evclilocspeech', OnClilocSpeech)
     SetFindDistance(12)
     SetFindVertical(12)
+    VortexTimer = time.time()
+    UseVortex = False
 
     while True:
         Wait(500)
+
+        if IsDead(Self()) or not Connected():
+            exit()
+
+        if time.time() - VortexTimer > 59 and UseVortex:
+            Cast('Energy Vortex')
+            WaitForTarget(2500)
+            TargetToTile(0x0, 5586, 2013, 0)
+            VortexTimer = time.time()
 
         if GetHP(Self()) < GetMaxHP(Self()):
             UseSkill('Peacemaking')
@@ -54,7 +65,7 @@ if __name__ == '__main__':
                     RequestStats(found)
                     if GetHP(found) < GetMaxHP(found) and not IsPoisoned(found):
                         CastToObj('Heal', found)
-                        print(f'Healing: {found} - {GetTooltip(found)} - {GetHP(found)}')
+                        #print(f'Healing: {found} - {GetTooltip(found)} - {GetHP(found)}')
                         Wait(500)
                     if IsPoisoned(found):
                         CastToObj('Arch Cure', found)
