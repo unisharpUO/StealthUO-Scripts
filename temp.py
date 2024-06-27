@@ -60,6 +60,7 @@ if __name__ == '__main__':
 
         if FindTypesArrayEx(PlayerTypes, [0xFFFF], [0x0], True):
             for found in GetFindedList():
+                Wait(150)
                 if GetNotoriety(found) == 1 and not IsDead(found):
                     RequestStats(found)
                     if GetHP(found) < GetMaxHP(found) and not IsPoisoned(found):
