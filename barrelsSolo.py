@@ -24,7 +24,7 @@ Doors = [1761, 1757]
 
 # room format is, entrance coords, good barrels, bad barrels
 RoomTopRight = [[6434, 1735], [6437, 1729], [6445, 1737], [6440, 1732], [6442, 1734]]
-RoomTopLeft = [[6428, 1735]]
+RoomTopLeft = [[6428, 1735], [6437, 1729], [6437, 1729], [6420, 1732], [6422, 1734]]
 RoomBottomRight = [[6434, 1752]]
 RoomBottomLeft = [[6428, 1752]]
 Rooms = [RoomTopRight, RoomTopLeft, RoomBottomRight, RoomBottomLeft]
@@ -66,6 +66,7 @@ def GetSafe(_room):
         _barrels = FindBarrels()
         break
     return
+
 
 # solid barrels color 2500
 # regular barrels color 0
@@ -157,67 +158,65 @@ if __name__ == '__main__':
     SetEventProc('evClilocSpeech', OnClilocSpeech)
 
     SetMoveOpenDoor(True)
+    SetMoveThroughNPC(True)
 
     if GetSkillValue("Chivalry") > 50:
         UseChiv = True
     if GetSkillValue("Bushido") > 50:
         UseBush = True
 
-#    while True:
+    roomCurrent = []
+    for room in Rooms:
+        if GetX(Self()) == room[0][0] and GetY(Self()) == room[0][1]:
+            roomCurrent = room
 
-#        _target = RequestTarget()
-#        print(f'{GetType(_target)} {GetX(_target)} {GetY(_target)}')
-#        Wait(500)
+    while (GetX(Self()) != roomCurrent[0][0]) or \
+            (GetY(Self()) != roomCurrent[0][1]):
+        NewMoveXY(roomCurrent[0][0], roomCurrent[0][1], False, 0, False)
+        Wait(250)
+    SetFindDistance(2)
+    if FindTypesArrayEx(Doors, [0xFFFF], [0x0], True):
+        _foundList = GetFindedList()
+        if len(_foundList) > 0:
+            UseObject(_foundList[0])
+    else:
+        AddToSystemJournal('No door, exiting.')
+        exit()
 
-    while True:
-        for _room in Rooms:
-            while (GetX(Self()) != _room[0][0]) or \
-                    (GetY(Self()) != _room[0][1]):
-                NewMoveXY(_room[0][0], _room[0][1], False, 0, False)
+    print(f'Door opened, next routine...')
+    # at this point we've moved to the door and opened it
+
+    if roomCurrent[0][0] == 6434:
+        Step(2)
+        Wait(500)
+        Step(2)
+        Wait(500)
+        Step(2)
+    else:
+        Step(6)
+        Wait(500)
+        Step(6)
+        Wait(500)
+        Step(6)
+
+    while not GotKey:
+        SetFindDistance(8)
+        _barrels = FindBarrels()
+        _barrelsCoords = []
+        _centerBarrels = GetCenterBarrels(roomCurrent)
+        for _barrel in _barrels:
+            if [GetX(_barrel), GetY(_barrel)] in _centerBarrels:
+                continue
+            while GetDistance(_barrel) > 1:
+                _dir = CalcDir(GetX(Self()), GetY(Self()),
+                               GetX(_barrel), GetY(_barrel))
+                print(f'Stepping')
+                Step(_dir)
                 Wait(250)
-            SetFindDistance(2)
-            if FindTypesArrayEx(Doors, [0xFFFF], [0x0], True):
-                _foundList = GetFindedList()
-                if len(_foundList) > 0:
-                    UseObject(_foundList[0])
-            else:
-                AddToSystemJournal('No door, exiting.')
-                exit()
+            AttackBarrels(_barrel)
+            _barrels = FindBarrels()
+            break
 
-            print(f'Door opened, next routine...')
-            # at this point we've moved to the door and opened it
-
-            if _room[0][0] == 6434:
-                Step(2)
-                Wait(500)
-                Step(2)
-                Wait(500)
-                Step(2)
-            else:
-                Step(6)
-                Wait(500)
-                Step(6)
-                Wait(500)
-                Step(6)
-
-            while not GotKey:
-                SetFindDistance(8)
-                _barrels = FindBarrels()
-                _barrelsCoords = []
-                _centerBarrels = GetCenterBarrels(_room)
-                for _barrel in _barrels:
-                    if [GetX(_barrel), GetY(_barrel)] in _centerBarrels:
-                        continue
-                    while GetDistance(_barrel) > 1:
-                        _dir = CalcDir(GetX(Self()), GetY(Self()),
-                                       GetX(_barrel), GetY(_barrel))
-                        print(f'Stepping')
-                        Step(_dir)
-                        Wait(250)
-                    AttackBarrels(_barrel)
-                    _barrels = FindBarrels()
-                    break
-
-            if GotKey:
-                #GetSafe(_room)
-                GotKey = False
+    if GotKey:
+        #GetSafe(_room)
+        GotKey = False

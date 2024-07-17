@@ -4,6 +4,7 @@ from lib.helpers import *
 LeaderID = 37928828
 AutoFollow = False
 Confidence = False
+BossType = [704]
 
 
 def onPartyInvite(senderID):
