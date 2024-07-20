@@ -25,8 +25,8 @@ Doors = [1761, 1757]
 # room format is, entrance coords, good barrels, bad barrels
 RoomTopRight = [[6434, 1735], [6437, 1729], [6445, 1737], [6440, 1732], [6442, 1734]]
 RoomTopLeft = [[6428, 1735], [6437, 1729], [6437, 1729], [6420, 1732], [6422, 1734]]
-RoomBottomRight = [[6434, 1752]]
-RoomBottomLeft = [[6428, 1752]]
+RoomBottomRight = [[6434, 1752], [6437, 1749], [6445, 1757], [6440, 1752], [6442, 1754]]
+RoomBottomLeft = [[6428, 1752], [6417, 1749], [6425, 1757], [6420, 1752], [6422, 1754]]
 Rooms = [RoomTopRight, RoomTopLeft, RoomBottomRight, RoomBottomLeft]
 
 
