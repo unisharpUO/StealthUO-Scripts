@@ -141,6 +141,10 @@ def AttackBarrels(_barrel):
             print(f'attacking lich')
             Attack(FindItem())
             Wait(1500)
+        while FindType(215, 0x0):
+            print(f'attacking rat')
+            Attack(FindItem())
+            Wait(1500)
         if GetHP(Self()) < (GetMaxHP(Self()) - 20):
             SetWarMode(False)
             Heal()
