@@ -126,6 +126,9 @@ def AttackBarrels(_barrel):
     Attack(_barrel)
     print(f'attacking barrel')
     while IsObjectExists(_barrel):
+        if GetActiveAbility() == "0" and GetMana(Self()) > 30:
+            UsePrimaryAbility()
+            Wait(500)
         while FindType(0x005C, 0x0):
             print(f'attacking serpent')
             Attack(FindItem())
@@ -134,7 +137,10 @@ def AttackBarrels(_barrel):
             print(f'attacking bat')
             Attack(FindItem())
             Wait(1500)
-        UsePrimaryAbility()
+        while FindType(24, 0x0):
+            print(f'attacking lich')
+            Attack(FindItem())
+            Wait(1500)
         if GetHP(Self()) < (GetMaxHP(Self()) - 20):
             SetWarMode(False)
             Heal()
@@ -150,7 +156,7 @@ def AttackBarrels(_barrel):
         if FindType(0x410B, 0x0):
             GetKey(FindItem())
         print('cycling 2s wait in AttackBarrels function')
-        Wait(2000)
+        Wait(500)
         Attack(_barrel)
 
 
@@ -207,16 +213,34 @@ if __name__ == '__main__':
         for _barrel in _barrels:
             if [GetX(_barrel), GetY(_barrel)] in _centerBarrels:
                 continue
+            count = 0
             while GetDistance(_barrel) > 1:
                 _dir = CalcDir(GetX(Self()), GetY(Self()),
                                GetX(_barrel), GetY(_barrel))
                 print(f'Stepping')
                 Step(_dir)
                 Wait(250)
+                count += 1
+                if count > 3 and GetDirection(Self()) == 3:
+                    Step(4)
+                    Step(4)
+                    count = 0
+                elif count > 3 and GetDirection(Self()) == 1:
+                    Step(2)
+                    Step(2)
+                    count = 0
+                elif count > 3 and GetDirection(Self()) == 7:
+                    Step(0)
+                    Step(0)
+                    count = 0
+                elif count > 3 and GetDirection(Self()) == 5:
+                    Step(6)
+                    Step(6)
+                    count = 0
             AttackBarrels(_barrel)
             _barrels = FindBarrels()
             break
 
     if GotKey:
-        #GetSafe(_room)
+        print('GOT KEY')
         GotKey = False
