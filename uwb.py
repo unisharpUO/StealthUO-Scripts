@@ -81,7 +81,7 @@ if __name__ == '__main__':
         Chivalry = True
 
     while True:
-        Wait(250)
+        Wait(500)
 
         if not CurseWeapon:
             Cast('Curse Weapon')
@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
         if AutoFollow:
             if (GetX(Self()) != GetX(LeaderID)) or (GetY(Self()) != GetY(LeaderID)):
-                MoveXY(GetX(LeaderID), GetY(LeaderID), False, 0, True)
+                MoveXY(GetX(LeaderID), GetY(LeaderID), False, 1, True)
 
         healed = False
         if GetHP(Self()) < (GetMaxHP(Self()) - 20) and not IsPoisoned(Self()):

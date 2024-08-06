@@ -1,9 +1,6 @@
 from helpers import *
 
 
-PlayerTypes = [400, 401, 402, 403, 605, 606, 607, 608, 666, 667, 695, 694]
-
-
 def OnClilocSpeech(_param1, _param2, _param3, _message):
     if 'Hat' in _message:
         InsureHats()

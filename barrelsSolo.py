@@ -219,25 +219,30 @@ if __name__ == '__main__':
                 continue
             count = 0
             while GetDistance(_barrel) > 1:
+                IgnoreReset()
                 _dir = CalcDir(GetX(Self()), GetY(Self()),
                                GetX(_barrel), GetY(_barrel))
-                print(f'Stepping')
+                print(f'Stepping {_dir}')
                 Step(_dir)
                 Wait(250)
                 count += 1
                 if count > 3 and GetDirection(Self()) == 3:
+                    print(f'Stepping 3')
                     Step(4)
                     Step(4)
                     count = 0
                 elif count > 3 and GetDirection(Self()) == 1:
+                    print(f'Stepping 1')
                     Step(2)
                     Step(2)
                     count = 0
                 elif count > 3 and GetDirection(Self()) == 7:
+                    print(f'Stepping 7')
                     Step(0)
                     Step(0)
                     count = 0
                 elif count > 3 and GetDirection(Self()) == 5:
+                    print(f'Stepping 5')
                     Step(6)
                     Step(6)
                     count = 0
